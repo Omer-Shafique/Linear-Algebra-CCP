@@ -71,17 +71,18 @@
     padding: 14px 0;
     font-size: 18px;
     font-weight: 700;
-    background: linear-gradient(135deg, #2196f3, #0d47a1);
+    background: #9c004e;
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    box-shadow: 0 6px 12px #0d47a1aa;
+    box-shadow: 0 6px 12px #cc0066;
     transition: background 0.35s ease;
     user-select: none;
   }
   button:hover {
-    background: linear-gradient(135deg, #0d47a1, #0b3861);
+    background: #78003c;
+    
   }
   canvas {
     margin-top: 30px;
@@ -178,21 +179,21 @@
           {
             label: 'Susceptible',
             data: sData,
-            backgroundColor: 'rgba(0, 188, 255, 0.7)',  // neon blue
+            backgroundColor: '#fffb00',  // neon blue
             borderColor: 'rgba(0, 188, 255, 1)',
             stack: 'Stack 0',
           },
           {
             label: 'Infected',
             data: iData,
-            backgroundColor: 'rgba(255, 69, 105, 0.7)',  // bright red
+            backgroundColor: '#ff0000',  // bright red
             borderColor: 'rgba(255, 69, 105, 1)',
             stack: 'Stack 0',
           },
           {
             label: 'Recovered',
             data: rData,
-            backgroundColor: 'rgba(0, 255, 180, 0.7)',  // teal green
+            backgroundColor: '#00e1ff',  // teal green
             borderColor: 'rgba(0, 255, 180, 1)',
             stack: 'Stack 0',
           }
