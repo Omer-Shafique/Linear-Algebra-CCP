@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Advanced SIR Model Disease Spread Simulation</title>
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #121212;
+    margin: 0;
+    padding: 0;
+    color: #e0e0e0;
+  }
+  .container {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 20px 30px;
+    background: #1e1e1e;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    border-radius: 12px;
+  }
+  h1 {
+    text-align: center;
+    color: #f0f0f0;
+    margin-bottom: 8px;
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 0.04em;
+  }
+  .authors {
+    text-align: center;
+    font-size: 14px;
+    color: #bbbbbb;
+    white-space: pre-line; /* to preserve line breaks */
+    margin-bottom: 25px;
+    user-select: none;
+  }
+  .inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 18px 30px;
+    margin-bottom: 35px;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    color: #cccccc;
+    font-size: 14px;
+    user-select: none;
+  }
+  input[type="number"] {
+    padding: 10px 12px;
+    margin-top: 6px;
+    font-size: 16px;
+    background: #2a2a2a;
+    color: #f0f0f0;
+    border: 1.8px solid #555;
+    border-radius: 8px;
+    transition: border-color 0.3s ease, background 0.3s ease;
+  }
+  input[type="number"]:focus {
+    border-color: #1e90ff;
+    outline: none;
+    box-shadow: 0 0 6px #1e90ffaa;
+    background: #333;
+  }
+  button {
+    grid-column: span 2;
+    padding: 14px 0;
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #2196f3, #0d47a1);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 6px 12px #0d47a1aa;
+    transition: background 0.35s ease;
+    user-select: none;
+  }
+  button:hover {
+    background: linear-gradient(135deg, #0d47a1, #0b3861);
+  }
+  canvas {
+    margin-top: 30px;
+    border-radius: 12px;
+    background: #222;
+    box-shadow: inset 0 0 12px #111;
+    width: 100% !important; /* make canvas responsive */
+    height: auto !important;
+  }
+  #summary {
+    margin-top: 20px;
+    padding: 15px;
+    background: #263238;
+    border: 1px solid #37474f;
+    border-radius: 10px;
+    font-size: 16px;
+    color: #b0bec5;
+  }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Advanced SIR Model Disease Spread Simulation</h1>
+    <div class="authors">
+      This CCP is created by the group members: Maida Khawaja (59012), Omer Shafiq (64723), Immad Hassan (58537)
+    </div>
+    <div class="inputs">
+      <label>Initial Susceptible (S): <input type="number" id="susceptible" value="990" step="1" /></label>
+      <label>Initial Infected (I): <input type="number" id="infected" value="10" step="1" /></label>
+      <label>Initial Recovered (R): <input type="number" id="recovered" value="0" step="1" /></label>
+      <label>Population Size (N): <input type="number" id="population" value="1000" step="1" /></label>
+      <label>Infection Rate (β): <input type="number" id="beta" value="0.3" step="0.01" /></label>
+      <label>Recovery Rate (γ): <input type="number" id="gamma" value="0.1" step="0.01" /></label>
+      <label>Time Steps: <input type="number" id="steps" value="100" /></label>
+      <label>Vaccination Rate: <input type="number" id="vaccination" value="0" step="0.01" /></label>
+      <button onclick="runSimulation()">Run Simulation</button>
+    </div>
+    <canvas id="sirChart" width="800" height="400"></canvas>
+  </div>
+
+  <script>
+  let sirChartInstance = null;
+
+  function runSimulation() {
+    const N = parseFloat(document.getElementById('population').value);
+    let S = parseFloat(document.getElementById('susceptible').value);
+    let I = parseFloat(document.getElementById('infected').value);
+    let R = parseFloat(document.getElementById('recovered').value);
+    let beta = parseFloat(document.getElementById('beta').value);
+    const gamma = parseFloat(document.getElementById('gamma').value);
+    const steps = parseInt(document.getElementById('steps').value);
+    const vaccinationRate = parseFloat(document.getElementById('vaccination').value);
+
+    // Store results over time
+    const sData = [S];
+    const iData = [I];
+    const rData = [R];
+    const time = [0];
+
+    for (let t = 1; t <= steps; t++) {
+      // Apply vaccination
+      let vaccinated = vaccinationRate * S;
+      S -= vaccinated;
+      R += vaccinated;
+
+      // Apply SIR model equations
+      const dS = -beta * S * I / N;
+      const dI = beta * S * I / N - gamma * I;
+      const dR = gamma * I;
+
+      // Update S, I, R
+      S += dS;
+      I += dI;
+      R += dR;
+
+      // Save current step
+      sData.push(S);
+      iData.push(I);
+      rData.push(R);
+      time.push(t);
+    }
+
+    // Render graph
+    const ctx = document.getElementById('sirChart').getContext('2d');
+    if (sirChartInstance) sirChartInstance.destroy();
+
+    sirChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: time,
+        datasets: [
+          {
+            label: 'Susceptible',
+            data: sData,
+            backgroundColor: 'rgba(0, 188, 255, 0.7)',  // neon blue
+            borderColor: 'rgba(0, 188, 255, 1)',
+            stack: 'Stack 0',
+          },
+          {
+            label: 'Infected',
+            data: iData,
+            backgroundColor: 'rgba(255, 69, 105, 0.7)',  // bright red
+            borderColor: 'rgba(255, 69, 105, 1)',
+            stack: 'Stack 0',
+          },
+          {
+            label: 'Recovered',
+            data: rData,
+            backgroundColor: 'rgba(0, 255, 180, 0.7)',  // teal green
+            borderColor: 'rgba(0, 255, 180, 1)',
+            stack: 'Stack 0',
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#ddd',
+              font: { size: 14 },
+              padding: 20,
+              boxWidth: 18
+            }
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            backgroundColor: '#333',
+            titleColor: '#fff',
+            bodyColor: '#ddd',
+            titleFont: { size: 16, weight: '600' },
+            bodyFont: { size: 14 },
+            padding: 10,
+          }
+        },
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        scales: {
+          x: {
+            stacked: true,
+            ticks: { color: '#ccc' },
+            title: { display: true, text: 'Time (Days)', color: '#aaa', font: { size: 14 } }
+          },
+          y: {
+            stacked: true,
+            ticks: { color: '#ccc' },
+            title: { display: true, text: 'Population Count', color: '#aaa', font: { size: 14 } }
+          }
+        }
+      }
+    });
+
+    // Display Final Conclusion Summary
+    displaySummary(S, I, R);
+  }
+
+  function displaySummary(S, I, R) {
+    let summaryBox = document.getElementById("summary");
+    if (!summaryBox) {
+      summaryBox = document.createElement("div");
+      summaryBox.id = "summary";
+      document.querySelector(".container").appendChild(summaryBox);
+    }
+    summaryBox.innerHTML = `
+      <strong>Final Results after Simulation:</strong><br/>
+      Susceptible: ${S.toFixed(2)}<br/>
+      Infected: ${I.toFixed(2)}<br/>
+      Recovered: ${R.toFixed(2)}<br/>
+      <br/>
+      These results show how the population shifts across compartments during an outbreak, based on the SIR model.
+    `;
+  }
+  </script>
+</body>
+</html>
